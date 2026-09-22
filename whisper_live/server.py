@@ -690,7 +690,7 @@ class TranscriptionServer:
 
     def _stream_transcription(self, file, language, prompt, temperature,
                               timestamp_granularities,
-                              requested_model=None):
+                              requested_model=None, vad_filter=False):
         """Return a StreamingResponse that yields SSE events per segment.
 
         The first event carries the detected language and its probability, then
@@ -711,7 +711,7 @@ class TranscriptionServer:
                     language=language,
                     initial_prompt=prompt,
                     temperature=temperature,
-                    vad_filter=False,
+                    vad_filter=vad_filter,
                     word_timestamps=(timestamp_granularities and "word" in timestamp_granularities),
                 )
 
@@ -891,12 +891,14 @@ class TranscriptionServer:
             known_speaker_references: Optional[List[UploadFile]] = File(default=None),
             stream: bool = Form(default=False),
             hotwords: Optional[str] = Form(default=None),
+            vad_filter: bool = Form(default=False),
         ):
             if stream:
                 return self._stream_transcription(
                     file, language, prompt, temperature,
                     timestamp_granularities,
                     model,
+                    vad_filter,
                 )
 
             ignored_params = []
@@ -927,7 +929,7 @@ class TranscriptionServer:
                     language=language,
                     initial_prompt=prompt,
                     temperature=temperature,
-                    vad_filter=False,
+                    vad_filter=vad_filter,
                     word_timestamps=(timestamp_granularities and "word" in timestamp_granularities),
                     hotwords=hotwords,
                 )
